@@ -18,31 +18,28 @@ async def on_chat_start():
         files = await cl.AskFileMessage(
             content="Please upload a pdf file to begin!",
             accept=["application/pdf"],
-            max_size_mb=1000,# Optionally limit the file size
+            max_size_mb=800,# Optionally limit the file size
             max_files=10,
             timeout=180, # Set a timeout for user response,
         ).send()
 
-    #file = files[0] # Get the first uploaded file
-    #print(file) # Print the file object for debugging
+    file = files[0] # Get the first uploaded file
+    print(file) # Print the file object for debugging
     
      # Sending an image with the local file path
     elements = [
     cl.Image(name="image", display="inline", path="pic.jpg")
     ]
     # Inform the user that processing has started
-    msg = cl.Message(content=f"Processing`...",elements=elements)
+    msg = cl.Message(content=f"Processing `{file.name}`...",elements=elements)
     await msg.send()
 
     # Read the PDF file
-     # Initialize pdf_text to store combined text from all files
+    pdf = PyPDF2.PdfReader(file.path)
     pdf_text = ""
-
-    for file in files:
-        # Read the PDF file
-        pdf = PyPDF2.PdfReader(file.path)
-        for page in pdf.pages:
-            pdf_text += page.extract_text()
+    for page in pdf.pages:
+        pdf_text += page.extract_text()
+        
 
     # Split the text into chunks
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1200, chunk_overlap=50)
